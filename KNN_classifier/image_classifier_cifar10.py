@@ -7,7 +7,7 @@ from urllib import request
 import ssl
 import tarfile
 
-class KNNClassifier:            # k-Nearest neighbors for image classification
+class KNNClassifier:            # k-Nearest neighbors for image classificatio
 
     def __init__(self, k=5):    # Initialize KNN classifier
         
