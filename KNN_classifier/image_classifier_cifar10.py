@@ -258,4 +258,5 @@ def main():
     print(f"\nFinal prediction: {class_names[predicted]}")
 
 if __name__ == "__main__":
+    
     main()
