@@ -1,3 +1,4 @@
 cifar10_data
 KNN_classifier/cifar10_data
 KNN_classifier/cifar10_data/cifar-10-python.tar.gz
+KNN_classifier/__pycache__
