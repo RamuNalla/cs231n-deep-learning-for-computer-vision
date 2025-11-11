@@ -192,7 +192,9 @@ class SoftmaxClassifier:                # Linear classifier with Softmax loss an
         plt.tight_layout()
         plt.savefig('training_history.png', dpi=150, bbox_inches='tight')
         print("\nTraining history plot saved as 'training_history.png'")
-        plt.show()
+        plt.show()           # test
+
+        
 
 
 
