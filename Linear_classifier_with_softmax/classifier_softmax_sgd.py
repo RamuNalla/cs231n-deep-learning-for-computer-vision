@@ -194,7 +194,90 @@ class SoftmaxClassifier:                # Linear classifier with Softmax loss an
         print("\nTraining history plot saved as 'training_history.png'")
         plt.show()           # test
 
-        
 
+
+def demonstrate_backward_pass():
+    """Demonstrate the backward pass computation step by step"""
+    print("\n" + "=" * 70)
+    print("DETAILED BACKWARD PASS DEMONSTRATION")
+    print("=" * 70)
+    
+    # Small example for clarity
+    N, D, C = 3, 4, 3  # 3 samples, 4 features, 3 classes
+    
+    # Create simple data
+    X = np.random.randn(N, D)
+    y = np.array([0, 1, 2])
+    W = np.random.randn(D, C) * 0.01
+    b = np.zeros(C)
+    
+    print(f"\nInput dimensions:")
+    print(f"  X shape: {X.shape} (N={N} samples, D={D} features)")
+    print(f"  W shape: {W.shape} (D={D} features, C={C} classes)")
+    print(f"  b shape: {b.shape}")
+    print(f"  y shape: {y.shape} (true labels: {y})")
+    
+    # Forward pass
+    print("\n" + "-" * 70)
+    print("STEP 1: Forward Pass")
+    print("-" * 70)
+    scores = X.dot(W) + b
+    print(f"Scores (logits):")
+    print(scores)
+    
+    # Softmax
+    print("\n" + "-" * 70)
+    print("STEP 2: Softmax Probabilities")
+    print("-" * 70)
+    exp_scores = np.exp(scores - np.max(scores, axis=1, keepdims=True))
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+    print(f"Probabilities (rows sum to 1):")
+    print(probs)
+    print(f"\nRow sums: {np.sum(probs, axis=1)}")
+    
+    # Loss
+    print("\n" + "-" * 70)
+    print("STEP 3: Cross-Entropy Loss")
+    print("-" * 70)
+    correct_log_probs = -np.log(probs[range(N), y])
+    print(f"Correct class probabilities: {probs[range(N), y]}")
+    print(f"Negative log probabilities: {correct_log_probs}")
+    loss = np.sum(correct_log_probs) / N
+    print(f"Average loss: {loss:.6f}")
+    
+    # Backward pass
+    print("\n" + "-" * 70)
+    print("STEP 4: Backward Pass - Compute Gradients")
+    print("-" * 70)
+    
+    # Gradient of loss w.r.t. scores
+    dscores = probs.copy()
+    dscores[range(N), y] -= 1
+    dscores /= N
+    
+    print(f"Gradient w.r.t. scores (dL/dscores):")
+    print(dscores)
+    print(f"\nNote: The gradient is (probability - 1) for correct class,")
+    print(f"      and just (probability) for incorrect classes")
+    
+    # Gradients for parameters
+    dW = X.T.dot(dscores)
+    db = np.sum(dscores, axis=0)
+    
+    print(f"\nGradient w.r.t. weights (dL/dW) shape: {dW.shape}")
+    print(dW)
+    print(f"\nGradient w.r.t. biases (dL/db) shape: {db.shape}")
+    print(db)
+    
+    print("\n" + "-" * 70)
+    print("STEP 5: SGD Update (example with lr=0.1)")
+    print("-" * 70)
+    lr = 0.1
+    W_new = W - lr * dW
+    b_new = b - lr * db
+    print(f"Weight update: W_new = W - {lr} * dW")
+    print(f"Bias update: b_new = b - {lr} * db")
+    print(f"\nWeight change magnitude: {np.linalg.norm(W - W_new):.6f}")
+    print(f"Bias change magnitude: {np.linalg.norm(b - b_new):.6f}")
 
 
