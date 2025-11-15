@@ -281,3 +281,109 @@ def demonstrate_backward_pass():
     print(f"Bias change magnitude: {np.linalg.norm(b - b_new):.6f}")
 
 
+def main():
+    """Main function to demonstrate the Softmax classifier"""
+    print("=" * 70)
+    print("LINEAR CLASSIFIER WITH SOFTMAX LOSS")
+    print("=" * 70)
+    
+    # Demonstrate backward pass with small example
+    demonstrate_backward_pass()
+    
+    # Generate synthetic dataset
+    print("\n" + "=" * 70)
+    print("FULL TRAINING DEMONSTRATION")
+    print("=" * 70)
+    
+    print("\nGenerating synthetic dataset...")
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=20,
+        n_informative=15,
+        n_redundant=5,
+        n_classes=5,
+        n_clusters_per_class=1,
+        random_state=42
+    )
+    
+    # Split into train, validation, and test sets
+    X_temp, X_test, y_temp, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_temp, y_temp, test_size=0.2, random_state=42
+    )
+    
+    # Standardize features
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_val = scaler.transform(X_val)
+    X_test = scaler.transform(X_test)
+    
+    print(f"Dataset split:")
+    print(f"  Training: {X_train.shape[0]} samples")
+    print(f"  Validation: {X_val.shape[0]} samples")
+    print(f"  Test: {X_test.shape[0]} samples")
+    print(f"  Features: {X_train.shape[1]}")
+    print(f"  Classes: {len(np.unique(y))}")
+    
+    # Initialize classifier
+    input_dim = X_train.shape[1]
+    num_classes = len(np.unique(y))
+    
+    classifier = SoftmaxClassifier(
+        input_dim=input_dim,
+        num_classes=num_classes,
+        learning_rate=0.5,
+        reg_strength=0.001
+    )
+    
+    # Train with SGD
+    classifier.train_sgd(
+        X_train, y_train,
+        X_val, y_val,
+        num_epochs=100,
+        batch_size=32,
+        verbose=True
+    )
+    
+    # Evaluate on test set
+    print("\n" + "=" * 70)
+    print("FINAL EVALUATION ON TEST SET")
+    print("=" * 70)
+    
+    test_acc = classifier.accuracy(X_test, y_test)
+    print(f"Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
+    
+    # Show some predictions
+    print("\n" + "-" * 70)
+    print("Sample Predictions:")
+    print("-" * 70)
+    y_pred = classifier.predict(X_test[:10])
+    print(f"{'Index':<8} {'True':<8} {'Predicted':<12} {'Correct?'}")
+    print("-" * 70)
+    for i in range(10):
+        correct = "✓" if y_test[i] == y_pred[i] else "✗"
+        print(f"{i:<8} {y_test[i]:<8} {y_pred[i]:<12} {correct}")
+    
+    # Detailed prediction for one sample
+    print("\n" + "-" * 70)
+    print("Detailed Prediction for Sample 0:")
+    print("-" * 70)
+    sample = X_test[0:1]
+    scores = classifier.forward(sample)
+    probs = classifier.softmax(scores)
+    
+    print(f"Raw scores: {scores[0]}")
+    print(f"Softmax probabilities:")
+    for cls in range(num_classes):
+        print(f"  Class {cls}: {probs[0, cls]:.6f} ({probs[0, cls]*100:.2f}%)")
+    print(f"Predicted class: {np.argmax(probs[0])}")
+    print(f"True class: {y_test[0]}")
+    
+    # Plot training history
+    classifier.plot_training_history()
+
+
+if __name__ == "__main__":
+    main()
