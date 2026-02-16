@@ -53,7 +53,7 @@ axs[3].imshow(magnitude, cmap='gray')
 axs[3].set_title('4. Combined Magnitude')
 
 for ax in axs:
-    ax.axis('off') # Hide pixel coordinates for a cleaner look
+    ax.axis('off') 
 
 plt.tight_layout()
 plt.show()
