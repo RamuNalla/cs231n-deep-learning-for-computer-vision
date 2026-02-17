@@ -9,10 +9,6 @@ def batchnorm_forward(x, gamma, beta, eps):
     - gamma: Scale parameter of shape (D,)
     - beta: Shift paremeter of shape (D,)
     - eps: Small constant to prevent division by zero (e.g., 1e-5)
-    
-    Returns:
-    - out: The output data
-    - cache: Tuple of values needed for the backward pass
     """
     N, D = x.shape
     
