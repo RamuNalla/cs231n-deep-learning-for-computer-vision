@@ -4,79 +4,86 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 from torchvision import models
+import matplotlib.pyplot as plt
+import numpy as np
 
-def run_transfer_learning():
+def run_transfer_learning_complete():
     # 1. Setup Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # 2. Data Preparation (CIFAR-10)
-    # We use standard ImageNet stats for normalization because ResNet expects them
+    # 2. Data Preparation
     transform = transforms.Compose([
-        transforms.Resize(224), # ResNet expects 224x224
+        transforms.Resize(224), 
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
     ])
 
-    # Load CIFAR-10
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform)
-    
-    # Create a small subset for this exercise (e.g., 500 images) to speed up testing
-    subset_indices = range(500) 
-    train_subset = torch.utils.data.Subset(trainset, subset_indices)
-    
-    trainloader = torch.utils.data.DataLoader(train_subset, batch_size=32,
-                                              shuffle=True, num_workers=2)
+    # CIFAR-10 Class Names (for printing)
+    classes = ('plane', 'car', 'bird', 'cat', 'deer', 
+               'dog', 'frog', 'horse', 'ship', 'truck')
 
-    # 3. Load Pre-trained ResNet18
+    # Load Data (Small subsets for speed)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(torch.utils.data.Subset(trainset, range(200)), batch_size=32, shuffle=True)
+
+    testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+    testloader = torch.utils.data.DataLoader(torch.utils.data.Subset(testset, range(10)), batch_size=10, shuffle=False)
+
+    # 3. Setup Model
     print("Loading ResNet18...")
     model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
 
-    # 4. Freeze all layers
+    # Freeze Base Layers
     for param in model.parameters():
         param.requires_grad = False
 
-    # 5. Replace the Final Layer
-    # ResNet's final layer is called 'fc'. We replace it with a new Linear layer.
-    # New layers have requires_grad=True by default.
+    # Replace Head
     num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, 10) # 10 output classes for CIFAR-10
-
+    model.fc = nn.Linear(num_ftrs, 10) 
     model = model.to(device)
 
-    # 6. Define Loss and Optimizer
+    # 4. Training
     criterion = nn.CrossEntropyLoss()
-    
-    # Only optimize the parameters of the final layer!
     optimizer = optim.SGD(model.fc.parameters(), lr=0.001, momentum=0.9)
 
-    # 7. Fine-tuning Loop
-    print("Starting Fine-tuning...")
+    print("Training...")
     model.train()
-    
-    for epoch in range(1): # Run 1 epoch for demonstration
-        running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
-            inputs, labels = data
+    for epoch in range(20): # 1 Epoch for demo
+        for inputs, labels in trainloader:
             inputs, labels = inputs.to(device), labels.to(device)
-
-            # Zero the parameter gradients
             optimizer.zero_grad()
-
-            # Forward + Backward + Optimize
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(model(inputs), labels)
             loss.backward()
             optimizer.step()
+    print("Training Finished.")
 
-            running_loss += loss.item()
-            if i % 5 == 0:
-                print(f'[Epoch {epoch + 1}, Batch {i + 1}] loss: {running_loss / 5:.3f}')
-                running_loss = 0.0
+    # ==========================================
+    # 5. VISUALIZATION & PRINTING RESULTS
+    # ==========================================
+    print("\n--- Model Predictions ---")
+    model.eval()
+    
+    # Get a single batch of test images
+    dataiter = iter(testloader)
+    images, labels = next(dataiter)
+    images, labels = images.to(device), labels.to(device)
 
-    print('Finished Fine-tuning')
+    # Run inference
+    with torch.no_grad():
+        outputs = model(images)
+        _, predicted = torch.max(outputs, 1)
 
-# Run the function
+    # Print Results to Console
+    print(f"{'Index':<5} | {'Actual Label':<15} | {'Predicted Label':<15} | {'Result'}")
+    print("-" * 55)
+    
+    for i in range(len(labels)):
+        actual = classes[labels[i]]
+        pred = classes[predicted[i]]
+        result = "✅" if actual == pred else "❌"
+        print(f"{i:<5} | {actual:<15} | {pred:<15} | {result}")
+
+# Run
 if __name__ == "__main__":
-    run_transfer_learning()
+    run_transfer_learning_complete()
