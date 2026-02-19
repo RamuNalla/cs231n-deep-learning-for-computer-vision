@@ -74,7 +74,6 @@ def run_transfer_learning_complete():
         outputs = model(images)
         _, predicted = torch.max(outputs, 1)
 
-    # Print Results to Console
     print(f"{'Index':<5} | {'Actual Label':<15} | {'Predicted Label':<15} | {'Result'}")
     print("-" * 55)
     
