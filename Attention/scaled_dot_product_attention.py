@@ -12,18 +12,17 @@ def scaled_dot_product_attention(query, key, value, mask=None):
     - value: (Batch, Heads, Seq_Len_V, d_v) # Usually Seq_Len_K == Seq_Len_V and d_k == d_v
     - mask:  Broadcastable to (Batch, Heads, Seq_Len_Q, Seq_Len_K)
     """
-    # 1. Get the dimension of the keys (d_k) for the scaling factor
-    d_k = query.size(-1)
+    d_k = query.size(-1)        # Get the dimension of the keys (d_k) for the scaling factor
     
-    # 2. Calculate the raw dot products (Q * K^T)
+    # Calculate the raw dot products (Q * K^T)
     # We transpose the last two dimensions of the Key tensor: (..., Seq_Len_K, d_k) -> (..., d_k, Seq_Len_K)
     # Matrix multiplication will result in shape: (Batch, Heads, Seq_Len_Q, Seq_Len_K)
     scores = torch.matmul(query, key.transpose(-2, -1))
     
-    # 3. Apply the Scale (This prevents the vanishing gradients)
+    # Apply the Scale (This prevents the vanishing gradients)
     scores = scores / math.sqrt(d_k)
     
-    # 4. Apply Mask (if provided)
+    # Apply Mask (if provided)
     # We fill masked positions with a very large negative number so Softmax turns them to 0
     if mask is not None:
         scores = scores.masked_fill(mask == 0, -1e9)
