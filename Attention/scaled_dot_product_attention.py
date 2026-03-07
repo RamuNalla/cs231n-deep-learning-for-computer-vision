@@ -5,7 +5,6 @@ import math
 def scaled_dot_product_attention(query, key, value, mask=None):
     """
     Computes Scaled Dot-Product Attention.
-    
     Expected shapes:
     - query: (Batch, Heads, Seq_Len_Q, d_k)
     - key:   (Batch, Heads, Seq_Len_K, d_k)
