@@ -34,14 +34,12 @@ import numpy as np
 def nms(boxes, scores, iou_threshold=0.5):
     """
     Applies Non-Max Suppression to filter overlapping bounding boxes.
-    
     Args:
         boxes: List or array of boxes in [x1, y1, x2, y2] format.
         scores: List or array of confidence scores for each box.
         iou_threshold: Float. Boxes with IoU > threshold are suppressed.
         
-    Returns:
-        keep: A list of indices corresponding to the boxes to keep.
+    Returns: keep: A list of indices corresponding to the boxes to keep.
     """
     # Convert inputs to numpy arrays for vectorization
     boxes = np.array(boxes)
